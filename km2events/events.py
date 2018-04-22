@@ -37,7 +37,7 @@ class EventsBuilder:
                 self._add_question(question)
 
     def _add_question(self, question: Question, parent=None):
-        event_type = 'AddAnswerEvent' if parent is None else 'AddFollowUpQuestionEvent'
+        event_type = 'AddQuestionEvent' if parent is None else 'AddFollowUpQuestionEvent'
         event = {
             'eventType': event_type,
             'uuid': self._uuid_generator.generate(),
