@@ -1,8 +1,7 @@
 
-
 class KMPart:
 
-    def __init__(self, uuid):
+    def __init__(self, uuid: str):
         self.uuid = uuid
 
 
@@ -10,10 +9,11 @@ class KnowledgeModel(KMPart):
 
     def __init__(self, uuid, name):
         super().__init__(uuid)
+        self.everything = dict()  # type: Dict[uuid.UUID, KMPart]
 
-        self.name = name
+        self.name = name  # type: str
 
-        self.chapters = []
+        self.chapters = []  # type: List[Chapter]
 
 
 class Chapter(KMPart):
@@ -21,11 +21,11 @@ class Chapter(KMPart):
     def __init__(self, uuid, title, text="", **kwargs):
         super().__init__(uuid)
 
-        self.title = title
-        self.text = text
+        self.title = title  # type: str
+        self.text = text  # type: str
 
-        self.questions = []
-        self.km = None
+        self.questions = []  # type: List[Question]
+        self.km = None  # type: KnowledgeModel
 
 
 class Question(KMPart):
@@ -33,20 +33,24 @@ class Question(KMPart):
     def __init__(self, uuid, type, title, text="", **kwargs):
         super().__init__(uuid)
 
-        self.type = type
-        self.title = title
-        self.text = text
+        self.type = type  # type: str
+        self.title = title  # type: str
+        self.text = text  # type: str
 
-        self.precondition = None
-        self.followups = []
-        self.answers = []
-        self.experts = []
-        self.references = []
-        self.chapter = None
+        self.precondition = None  # type: Answer
+        self.followups = []  # type: List[Question]
+        self.answers = []  # type: List[Answer]
+        self.experts = []  # type: List[Expert]
+        self.references = []  # type: List[Reference]
+        self.chapter = None  # type: Chapter
 
     @property
     def is_followup(self):
         return self.precondition is not None
+
+    @property
+    def is_root(self):
+        return self.precondition is None
 
     @property
     def km(self):
@@ -58,11 +62,11 @@ class Answer(KMPart):
     def __init__(self, uuid, label, advice="", **kwargs):
         super().__init__(uuid)
 
-        self.label = label
-        self.advice = advice
+        self.label = label  # type: str
+        self.advice = advice  # type: str
 
-        self.question = None
-        self.followups = []
+        self.question = None  # type: Question
+        self.followups = []  # type: List[Question]
 
     @property
     def chapter(self):
@@ -78,11 +82,11 @@ class Expert(KMPart):
     def __init__(self, uuid, name, email="", type="organisation", **kwargs):
         super().__init__(uuid)
 
-        self.name = name
-        self.email = email
-        self.type = type
+        self.name = name  # type: str
+        self.email = email  # type: str
+        self.type = type  # type: str
 
-        self.question = None
+        self.question = None  # type: Question
 
     @property
     def chapter(self):
@@ -98,10 +102,10 @@ class Reference(KMPart):
     def __init__(self, uuid, type, **kwargs):
         super().__init__(uuid)
 
-        self.type = type
-        self.content = dict(kwargs)
+        self.type = type  # type: str
+        self.content = dict(kwargs)  # type: Dict[str, str]
 
-        self.question = None
+        self.question = None  # type: Question
 
     @property
     def chapter(self):
@@ -110,5 +114,3 @@ class Reference(KMPart):
     @property
     def km(self):
         return self.question.chapter.km
-
-

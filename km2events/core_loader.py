@@ -1,4 +1,5 @@
-from km2events.km import *
+from km2events.km import KnowledgeModel, Chapter, Question, \
+                         Answer, Expert, Reference, KMPart
 from km2events.exceptions import UUIDDuplicityError, UnknownUUIDError
 
 
@@ -28,6 +29,8 @@ class CoreLoader:
             followup.precondition = precondition
             precondition.followups.append(followup)
 
+        self.km.everything = self.uuid_registry
+
     def _add_question(self, chapter: Chapter, question_data, preconditions):
         question = Question(**question_data)
         question.chapter = chapter
@@ -56,6 +59,8 @@ class CoreLoader:
         self._register_obj(expert)
 
     def _add_reference(self, question: Question, reference_data):
+        if reference_data['type'] == 'xref':  # skip xrefs
+            return
         reference = Reference(**reference_data)
         reference.question = question
         question.references.append(reference)

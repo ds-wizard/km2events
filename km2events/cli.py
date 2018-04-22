@@ -1,10 +1,12 @@
 import json
 import os
 import sys
+import uuid
 
 import click
 
 from km2events.core_loader import CoreLoader
+from km2events.events import EventsBuilder
 from km2events.exceptions import KM2EventsError
 
 
@@ -31,7 +33,7 @@ def _load_chapter_from_file(loader, chapter_file):
 def cli(dskm_root):
     core_root = os.path.join(dskm_root, 'core')
 
-    loader = CoreLoader(None, 'Testing km2events')
+    loader = CoreLoader(str(uuid.uuid4()), 'Testing km2events')
 
     try:
         for chapter_file in _get_chapter_files(core_root):
@@ -40,4 +42,6 @@ def cli(dskm_root):
         click.secho(e.message, fg='red')
         sys.exit(e.return_code)
 
-    click.secho('KM loaded ({} unique objects)'.format(len(loader.uuid_registry)), fg='green')
+    eb = EventsBuilder()
+    eb.add_km(loader.km)
+    print(json.dumps(eb.events, indent=4))
