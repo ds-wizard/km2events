@@ -7,9 +7,11 @@ class EventsBuilder:
 
     def __init__(self):
         self.events = []
+        self.km = None
         self._uuid_generator = UUIDGenerator()
 
     def add_km(self, km: KnowledgeModel):
+        self.km = km
         self.events.append({
             'eventType': 'AddKnowledgeModelEvent',
             'uuid': self._uuid_generator.generate(),
@@ -26,10 +28,9 @@ class EventsBuilder:
             'uuid': self._uuid_generator.generate(),
             'kmUuid': chapter.km.uuid,
             'chapterUuid': chapter.uuid,
-            'title': chapter.title
+            'title': chapter.title,
+            'text': chapter.text
         }
-        if chapter.text != "":
-            event['text'] = chapter.text
         self.events.append(event)
 
         for question in chapter.questions:
@@ -44,11 +45,12 @@ class EventsBuilder:
             'kmUuid': question.km.uuid,
             'chapterUuid': question.chapter.uuid,
             'questionUuid': question.uuid,
-            'qType': question.type,
-            'title': question.title
+            'type': question.type,
+            'title': question.title,
+            'text': question.text,
+            'shortQuestionUuid': None,
+            'answerItemTemplate': None
         }
-        if question.text != "":
-            event['text'] = question.text
         if parent is not None:
             event['answerUuid'] = parent.uuid
         self.events.append(event)
@@ -68,10 +70,9 @@ class EventsBuilder:
             'chapterUuid': answer.chapter.uuid,
             'questionUuid': answer.question.uuid,
             'answerUuid': answer.uuid,
-            'label': answer.label
+            'label': answer.label,
+            'advice': answer.advice
         }
-        if answer.advice != "":
-            event['advice'] = answer.advice
         self.events.append(event)
 
         for followup in answer.followups:
@@ -103,3 +104,17 @@ class EventsBuilder:
             'chapter': reference.content['chapter']
         }
         self.events.append(event)
+
+    def make_package(self, name, version, artifactId, groupId,
+                     description='Transformed by km2events',
+                     parentPackageId=None):
+        return {
+            'parentPackageId': parentPackageId,
+            'artifactId': artifactId,
+            'name': name,
+            'version': version,
+            'groupId': groupId,
+            'id': '{}:{}'.format(groupId, version),
+            'description': description,
+            'events': self.events
+        }

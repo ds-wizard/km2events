@@ -59,7 +59,7 @@ class Question(KMPart):
 
 class Answer(KMPart):
 
-    def __init__(self, uuid, label, advice="", **kwargs):
+    def __init__(self, uuid, label, advice=None, **kwargs):
         super().__init__(uuid)
 
         self.label = label  # type: str
@@ -79,7 +79,7 @@ class Answer(KMPart):
 
 class Expert(KMPart):
 
-    def __init__(self, uuid, name, email="", type="organisation", **kwargs):
+    def __init__(self, uuid, name, email=None, type="organisation", **kwargs):
         super().__init__(uuid)
 
         self.name = name  # type: str

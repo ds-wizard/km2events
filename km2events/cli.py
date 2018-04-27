@@ -1,3 +1,4 @@
+import configparser
 import json
 import os
 import sys
@@ -28,13 +29,17 @@ def _load_chapter_from_file(loader, chapter_file):
 @click.version_option(version='0.1', prog_name='DS KM-to-Events transformer')
 @click.argument('dskm-root', type=click.Path(exists=True, readable=True,
                                              dir_okay=True, file_okay=False))
-# @click.option('-n', '--name', help='Name of Knowledge Model')
-# @click.option('-u', '--uuid', help='UUID of Knowledge Model)
-def cli(dskm_root):
+@click.option('-c', '--config-file', help='Config file', type=click.File('r'),
+              default='./config.ini')
+def cli(dskm_root, config_file):
+    config = configparser.ConfigParser()
+    config.read_file(config_file)
+
+    loader = CoreLoader(
+        config.get('km', 'uuid', fallback=str(uuid.uuid4())),
+        config.get('km', 'name')
+    )
     core_root = os.path.join(dskm_root, 'core')
-
-    loader = CoreLoader(str(uuid.uuid4()), 'Testing km2events')
-
     try:
         for chapter_file in _get_chapter_files(core_root):
             _load_chapter_from_file(loader, chapter_file)
@@ -44,4 +49,13 @@ def cli(dskm_root):
 
     eb = EventsBuilder()
     eb.add_km(loader.km)
-    print(json.dumps(eb.events, indent=4))
+
+    package = eb.make_package(
+        name=config.get('package', 'name'),
+        version=config.get('package', 'version', fallback='1.0.0'),
+        artifactId=config.get('package', 'artifactId'),
+        groupId=config.get('package', 'groupId'),
+        parentPackageId=config.get('package', 'parentPackageId', fallback=None),
+        description=config.get('package', 'description', fallback='')
+    )
+    print(json.dumps(package, indent=4))
