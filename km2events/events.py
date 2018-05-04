@@ -5,6 +5,12 @@ from km2events.uuid import UUIDGenerator
 
 class EventsBuilder:
 
+    event_types = {
+        'plain': 'AddQuestionEvent',
+        'followup': 'AddFollowUpQuestionEvent',
+        'template': 'AddAnswerItemTemplateQuestionEvent'
+    }
+
     def __init__(self):
         self.events = []
         self.km = None
@@ -37,24 +43,34 @@ class EventsBuilder:
             if question.is_root:
                 self._add_question(question)
 
-    def _add_question(self, question: Question, parent=None):
-        event_type = 'AddQuestionEvent' if parent is None else 'AddFollowUpQuestionEvent'
+    def _add_question(self, question: Question, t='plain', parent=None):
+        qtype = question.type
+        if qtype == 'option':
+            qtype = 'options'
         event = {
-            'eventType': event_type,
+            'eventType': self.event_types[t],
             'uuid': self._uuid_generator.generate(),
             'kmUuid': question.km.uuid,
             'chapterUuid': question.chapter.uuid,
             'questionUuid': question.uuid,
-            'type': question.type,
+            'type': qtype,
             'title': question.title,
             'text': question.text,
             'shortQuestionUuid': None,
             'answerItemTemplate': None
         }
-        if parent is not None:
+        if t == 'followup':
             event['answerUuid'] = parent.uuid
+        if t == 'template':
+            event['parentQuestionUuid'] = parent.uuid
+        if question.type == 'list':
+            event['answerItemTemplate'] = {"title": "Item"}
+
         self.events.append(event)
 
+        if question.type == 'list':
+            for followup in question.followups:
+                self._add_question(followup, 'template', question)
         for expert in question.experts:
             self._add_expert(expert)
         for reference in question.references:
@@ -76,7 +92,7 @@ class EventsBuilder:
         self.events.append(event)
 
         for followup in answer.followups:
-            self._add_question(followup, answer)
+            self._add_question(followup, 'followup', answer)
 
     def _add_expert(self, expert: Expert):
         event = {
