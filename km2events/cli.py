@@ -53,8 +53,8 @@ def cli(dskm_root, config_file):
     package = eb.make_package(
         name=config.get('package', 'name'),
         version=config.get('package', 'version', fallback='1.0.0'),
-        artifactId=config.get('package', 'artifactId'),
-        groupId=config.get('package', 'groupId'),
+        kmId=config.get('package', 'kmId'),
+        organizationId=config.get('package', 'organizationId'),
         parentPackageId=config.get('package', 'parentPackageId', fallback=None),
         description=config.get('package', 'description', fallback='')
     )

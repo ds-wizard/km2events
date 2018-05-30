@@ -21,6 +21,7 @@ class EventsBuilder:
         self.events.append({
             'eventType': 'AddKnowledgeModelEvent',
             'uuid': self._uuid_generator.generate(),
+            'path': self._construct_path(),
             'kmUuid': km.uuid,
             'name': km.name
         })
@@ -146,16 +147,16 @@ class EventsBuilder:
         }
         self.events.append(event)
 
-    def make_package(self, name, version, artifactId, groupId,
+    def make_package(self, name, version, kmId, organizationId,
                      description='Transformed by km2events',
                      parentPackageId=None):
         return {
             'parentPackageId': parentPackageId,
-            'artifactId': artifactId,
+            'kmId': kmId,
             'name': name,
             'version': version,
-            'groupId': groupId,
-            'id': '{}:{}'.format(groupId, version),
+            'organizationId': organizationId,
+            'id': '{}:{}:{}'.format(organizationId, kmId, version),
             'description': description,
             'events': self.events
         }
