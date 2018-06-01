@@ -11,9 +11,9 @@ class EventsBuilder:
         self._uuid_generator = UUIDGenerator()
 
     @staticmethod
-    def _construct_path(**breadcrumbs):
+    def _construct_path(breadcrumbs: list) -> list:
         return [
-            {'type': t, 'uuid': u} for t, u in breadcrumbs.items()
+            {'type': t, 'uuid': u} for t, u in breadcrumbs
         ]
 
     def add_km(self, km: KnowledgeModel):
@@ -21,7 +21,7 @@ class EventsBuilder:
         self.events.append({
             'eventType': 'AddKnowledgeModelEvent',
             'uuid': self._uuid_generator.generate(),
-            'path': self._construct_path(),
+            'path': self._construct_path([]),
             'kmUuid': km.uuid,
             'name': km.name
         })
@@ -30,37 +30,30 @@ class EventsBuilder:
             self._add_chapter(chapter)
 
     def _add_chapter(self, chapter: Chapter):
+        breadcrumbs = [('km', chapter.km.uuid)]
         event = {
             'eventType': 'AddChapterEvent',
             'uuid': self._uuid_generator.generate(),
-            'path': self._construct_path(
-                km=chapter.km.uuid
-            ),
+            'path': self._construct_path(breadcrumbs),
             'chapterUuid': chapter.uuid,
             'title': chapter.title,
             'text': chapter.text
         }
         self.events.append(event)
 
+        breadcrumbs.append(('chapter', chapter.uuid))
         for question in chapter.questions:
             if question.is_root:
-                self._add_question(question)
+                self._add_question(question, breadcrumbs)
 
-    def _add_question(self, question: Question, breadcrumbs=None):
+    def _add_question(self, question: Question, breadcrumbs: list):
         qtype = question.type
         if qtype == 'option':
             qtype = 'options'
-        if breadcrumbs is None:
-            breadcrumbs = {
-                'km': question.km.uuid,
-                'chapter': question.chapter.uuid
-            }
         event = {
             'eventType': 'AddQuestionEvent',
             'uuid': self._uuid_generator.generate(),
-            'path': self._construct_path(
-                **breadcrumbs
-            ),
+            'path': self._construct_path(breadcrumbs),
             'questionUuid': question.uuid,
             'type': qtype,
             'title': question.title,
@@ -73,75 +66,52 @@ class EventsBuilder:
 
         self.events.append(event)
 
+        xbreadcrumbs = list(breadcrumbs)
+        xbreadcrumbs.append(('question', question.uuid))
         if question.type == 'list':
             for followup in question.followups:
-                self._add_question(
-                    followup,
-                    {
-                        'km': question.km.uuid,
-                        'chapter': question.chapter.uuid,
-                        'question': question.uuid
-                    }
-                )
+                self._add_question(followup, xbreadcrumbs)
         for expert in question.experts:
-            self._add_expert(expert)
+            self._add_expert(expert, xbreadcrumbs)
         for reference in question.references:
-            self._add_reference(reference)
+            self._add_reference(reference, xbreadcrumbs)
         for answer in question.answers:
-            self._add_answer(answer)
+            self._add_answer(answer, xbreadcrumbs)
 
-    def _add_answer(self, answer: Answer):
+    def _add_answer(self, answer: Answer, breadcrumbs: list):
         event = {
             'eventType': 'AddAnswerEvent',
             'uuid': self._uuid_generator.generate(),
-            'path': self._construct_path(
-                km=answer.km.uuid,
-                chapter=answer.chapter.uuid,
-                question=answer.question.uuid
-            ),
+            'path': self._construct_path(breadcrumbs),
             'answerUuid': answer.uuid,
             'label': answer.label,
             'advice': answer.advice
         }
         self.events.append(event)
 
+        xbreadcrumbs = list(breadcrumbs)
+        xbreadcrumbs.append(('answer', answer.uuid))
         for followup in answer.followups:
-            self._add_question(
-                followup,
-                {
-                    'km': answer.km.uuid,
-                    'chapter': answer.chapter.uuid,
-                    'question': answer.question.uuid,
-                    'answer': answer.uuid
-                }
-            )
+            self._add_question(followup, xbreadcrumbs)
 
-    def _add_expert(self, expert: Expert):
+    def _add_expert(self, expert: Expert, breadcrumbs: list):
         event = {
             'eventType': 'AddExpertEvent',
             'uuid': self._uuid_generator.generate(),
-            'path': self._construct_path(
-                km=expert.km.uuid,
-                chapter=expert.chapter.uuid,
-                question=expert.question.uuid
-            ),
+            'path': self._construct_path(breadcrumbs),
             'expertUuid': expert.uuid,
             'name': expert.name,
             'email': expert.email
         }
         self.events.append(event)
 
-    def _add_reference(self, reference: Reference):
+    def _add_reference(self, reference: Reference, breadcrumbs: list):
         if reference.type != 'dmpbook':  # current DSW knows only dmpbook
             return
         event = {
             'eventType': 'AddReferenceEvent',
             'uuid': self._uuid_generator.generate(),
-            'path': self._construct_path(
-                km=reference.km.uuid,
-                chapter=reference.chapter.uuid,
-                question=reference.question.uuid
-            ),
+            'path': self._construct_path(breadcrumbs),
             'referenceUuid': reference.uuid,
             'chapter': reference.content['chapter']
         }
