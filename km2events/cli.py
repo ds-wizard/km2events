@@ -10,14 +10,13 @@ from km2events.core_loader import CoreLoader
 from km2events.events import EventsBuilder
 from km2events.exceptions import KM2EventsError
 
-
 def _get_chapter_files(root):
-    return [
+    return sorted([
         os.path.join(root, filename) for filename in os.listdir(root)
         if os.path.isfile(os.path.join(root, filename)) and
            filename.startswith('chapter') and
            filename.endswith('.json')
-    ]
+    ], key=lambda filename: int(filename[filename.find('chapter')+7:-5]))
 
 
 def _load_chapter_from_file(loader, chapter_file):
