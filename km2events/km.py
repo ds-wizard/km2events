@@ -36,6 +36,7 @@ class Question(KMPart):
         self.type = type  # type: str
         self.title = title  # type: str
         self.text = text  # type: str
+        self.shortuid = None # type: str
 
         self.precondition = None  # type: Answer
         self.followups = []  # type: List[Question]

@@ -58,7 +58,7 @@ class EventsBuilder:
             'type': qtype,
             'title': question.title,
             'text': question.text,
-            'shortQuestionUuid': None,
+            'shortQuestionUuid': question.shortuid,
             'answerItemTemplate': None
         }
         if question.type == 'list':

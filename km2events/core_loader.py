@@ -61,6 +61,9 @@ class CoreLoader:
     def _add_reference(self, question: Question, reference_data):
         if reference_data['type'] == 'xref':  # skip xrefs
             return
+        if reference_data['type'] == 'resourcepage':  # quick hack for bookrefs
+            question.shortuid = reference_data['shortuid']
+            return
         reference = Reference(**reference_data)
         reference.question = question
         question.references.append(reference)
