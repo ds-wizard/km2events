@@ -59,8 +59,6 @@ class CoreLoader:
         self._register_obj(expert)
 
     def _add_reference(self, question: Question, reference_data):
-        if reference_data['type'] == 'xref':  # skip xrefs
-            return
         reference = Reference(**reference_data)
         reference.question = question
         question.references.append(reference)

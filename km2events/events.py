@@ -58,7 +58,6 @@ class EventsBuilder:
             'type': qtype,
             'title': question.title,
             'text': question.text,
-            'shortQuestionUuid': None,
             'answerItemTemplate': None
         }
         if question.type == 'list':
@@ -106,15 +105,27 @@ class EventsBuilder:
         self.events.append(event)
 
     def _add_reference(self, reference: Reference, breadcrumbs: list):
-        if reference.type != 'dmpbook':  # current DSW knows only dmpbook
+        types = {
+            'url': 'URLReference',
+            'xref': 'CrossReference',
+            'resourcepage': 'ResourcePageReference'
+        }
+        if reference.type == 'dmpbook':
             return
         event = {
             'eventType': 'AddReferenceEvent',
+            'referenceType': types[reference.type],
             'uuid': self._uuid_generator.generate(),
             'path': self._construct_path(breadcrumbs),
-            'referenceUuid': reference.uuid,
-            'chapter': reference.content['chapter']
+            'referenceUuid': reference.uuid
         }
+        if reference.type == 'url':
+            event['url'] = reference.content['weblink']
+            event['anchor'] = reference.content['anchor']
+        elif reference.type == 'xref':
+            event['targetUuid'] = reference.content['target']
+        elif reference.type == 'resourcepage':
+            event['shortUuid'] = reference.content['shortuid']
         self.events.append(event)
 
     def make_package(self, name, version, kmId, organizationId,
