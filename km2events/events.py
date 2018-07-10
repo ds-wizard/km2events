@@ -106,15 +106,26 @@ class EventsBuilder:
         self.events.append(event)
 
     def _add_reference(self, reference: Reference, breadcrumbs: list):
-        if reference.type != 'dmpbook':  # current DSW knows only dmpbook
+        types = {
+            'url': 'AddURLReferenceEvent',
+            'xref': 'AddCrossReferenceEvent',
+            'resourcepage': 'AddResourcePageReferenceEvent'
+        }
+        if reference.type == 'dmpbook':
             return
         event = {
-            'eventType': 'AddReferenceEvent',
+            'eventType': types[reference.type],
             'uuid': self._uuid_generator.generate(),
             'path': self._construct_path(breadcrumbs),
-            'referenceUuid': reference.uuid,
-            'chapter': reference.content['chapter']
+            'referenceUuid': reference.uuid
         }
+        if reference.type == 'url':
+            event['url'] = reference.content['weblink']
+            event['anchor'] = reference.content['anchor']
+        elif reference.type == 'xref':
+            event['target'] = reference.content['target']
+        elif reference.type == 'resourcepage':
+            event['shortUuid'] = reference.content['shortuid']
         self.events.append(event)
 
     def make_package(self, name, version, kmId, organizationId,
