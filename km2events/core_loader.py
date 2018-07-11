@@ -1,5 +1,6 @@
 from km2events.km import KnowledgeModel, Chapter, Question, \
-                         Answer, Expert, Reference, KMPart
+                         Answer, Expert, Reference, KMPart, \
+                         MetricMeasure
 from km2events.exceptions import UUIDDuplicityError, UnknownUUIDError
 
 
@@ -51,6 +52,13 @@ class CoreLoader:
         answer.question = question
         question.answers.append(answer)
         self._register_obj(answer)
+
+        for metric_data in answer_data.get('metrics', []):
+            self._add_metric_measure(answer, metric_data)
+
+    def _add_metric_measure(self, answer: Answer, metric_data):
+        metric_measure = MetricMeasure(**metric_data)
+        answer.metrics.append(metric_measure)
 
     def _add_expert(self, question: Question, expert_data):
         expert = Expert(**expert_data)
