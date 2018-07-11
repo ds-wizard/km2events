@@ -2,16 +2,18 @@
 class KMPart:
 
     def __init__(self, uuid: str):
-        self.uuid = uuid
+        self.uuid = uuid  # type: str
 
 
 class KnowledgeModel(KMPart):
 
-    def __init__(self, uuid, name):
+    def __init__(self, uuid, title, description, chapterFiles, **kwargs):
         super().__init__(uuid)
         self.everything = dict()  # type: Dict[uuid.UUID, KMPart]
 
-        self.name = name  # type: str
+        self.name = title  # type: str
+        self.description = description  # type: str
+        self.chapterFiles = chapterFiles  # type: List[String]
 
         self.chapters = []  # type: List[Chapter]
         self.metrics = []  # type: List[Metric]
@@ -19,11 +21,11 @@ class KnowledgeModel(KMPart):
 
 class Metric(KMPart):
 
-    def __init__(self, uuid, title, abbreviation, description=None):
+    def __init__(self, uuid, title, abbreviation, description=None, **kwargs):
         super().__init__(uuid)
 
         self.title = title  # type: str
-        self.abbreviation = abbabbreviation  # type: str
+        self.abbreviation = abbreviation  # type: str
         self.description = description  # type: str
 
         self.references = [] # type: List[Reference]
@@ -93,9 +95,9 @@ class Answer(KMPart):
 class MetricMeasure:
 
     def __init__(self, uuid, measure, weight=1.0):
-        self.metric_uuid = uuid
-        self.measure = measure
-        self.weight = weight
+        self.metric_uuid = uuid  # type: str
+        self.measure = measure  # type: float
+        self.weight = weight  # type: float
 
 
 class Expert(KMPart):

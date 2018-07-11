@@ -1,16 +1,25 @@
 from km2events.km import KnowledgeModel, Chapter, Question, \
                          Answer, Expert, Reference, KMPart, \
-                         MetricMeasure
+                         MetricMeasure, Metric
 from km2events.exceptions import UUIDDuplicityError, UnknownUUIDError
 
 
 class CoreLoader:
 
-    def __init__(self, km_uuid, km_name):
+    def __init__(self, **kwargs):
         self.uuid_registry = dict()
 
-        self.km = KnowledgeModel(km_uuid, km_name)
+        self.km = KnowledgeModel(**kwargs)
         self._register_obj(self.km)
+
+    @staticmethod
+    def create_from_package(package_data):
+        loader = CoreLoader(**package_data)
+        loader.km.metrics = [
+            Metric(**metric_data)
+            for metric_data in package_data.get('metrics', [])
+        ]
+        return loader
 
     def add_chapter(self, chapter_data):
         preconditions = dict()  # UUID: UUID
