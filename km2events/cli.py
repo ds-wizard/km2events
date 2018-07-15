@@ -23,7 +23,8 @@ def _load_chapter_from_file(loader, root, chapter_file):
                                            dir_okay=True, file_okay=False))
 @click.option('-c', '--config-file', help='Config file', type=click.File('r'),
               default='./config.ini')
-def cli(km_root, config_file):
+@click.option('-b', '--bsonic', help='Produce Haskellish BSON', is_flag=True)
+def cli(km_root, config_file, bsonic):
     config = configparser.ConfigParser()
     config.read_file(config_file)
 
@@ -49,4 +50,9 @@ def cli(km_root, config_file):
         parentPackageId=config.get('package', 'parentPackageId', fallback=None),
         description=config.get('package', 'description', fallback=loader.km.description)
     )
-    print(json.dumps(package, indent=4))
+
+    out = json.dumps(package, indent=4)
+    if bsonic:
+        out = out.replace('{', '[').replace('}', ']')
+        out = out.replace(': ', ' BSON.=: ')
+    print(out)
