@@ -84,7 +84,15 @@ class EventsBuilder:
             'path': self._construct_path(breadcrumbs),
             'answerUuid': answer.uuid,
             'label': answer.label,
-            'advice': answer.advice
+            'advice': answer.advice,
+            'metricMeasures': [
+                {
+                    'metricUuid': metric_measure.metric_uuid,
+                    'measure': metric_measure.measure,
+                    'weight': metric_measure.weight
+                }
+                for metric_measure in answer.metrics
+            ]
         }
         self.events.append(event)
 

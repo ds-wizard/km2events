@@ -10,38 +10,30 @@ from km2events.core_loader import CoreLoader
 from km2events.events import EventsBuilder
 from km2events.exceptions import KM2EventsError
 
-def _get_chapter_files(root):
-    return sorted([
-        os.path.join(root, filename) for filename in os.listdir(root)
-        if os.path.isfile(os.path.join(root, filename)) and
-           filename.startswith('chapter') and
-           filename.endswith('.json')
-    ], key=lambda filename: int(filename[filename.find('chapter')+7:-5]))
 
-
-def _load_chapter_from_file(loader, chapter_file):
-    with open(chapter_file) as f:
+def _load_chapter_from_file(loader, root, chapter_file):
+    chapter_path = os.path.join(root, chapter_file)
+    with open(chapter_path) as f:
         loader.add_chapter(json.load(f))
 
 
 @click.command()
 @click.version_option(version='0.1', prog_name='DS KM-to-Events transformer')
-@click.argument('dskm-root', type=click.Path(exists=True, readable=True,
-                                             dir_okay=True, file_okay=False))
+@click.argument('km-root', type=click.Path(exists=True, readable=True,
+                                           dir_okay=True, file_okay=False))
 @click.option('-c', '--config-file', help='Config file', type=click.File('r'),
               default='./config.ini')
-def cli(dskm_root, config_file):
+def cli(km_root, config_file):
     config = configparser.ConfigParser()
     config.read_file(config_file)
 
-    loader = CoreLoader(
-        config.get('km', 'uuid', fallback=str(uuid.uuid4())),
-        config.get('km', 'name')
-    )
-    core_root = os.path.join(dskm_root, 'core')
+    root = os.path.join(km_root, 'core')
+    package_path = os.path.join(root, 'package.json')
+    with open(package_path) as f:
+        loader = CoreLoader.create_from_package(json.load(f))
     try:
-        for chapter_file in _get_chapter_files(core_root):
-            _load_chapter_from_file(loader, chapter_file)
+        for chapter_file in loader.km.chapterFiles:
+            _load_chapter_from_file(loader, root, chapter_file)
     except KM2EventsError as e:
         click.secho(e.message, fg='red')
         sys.exit(e.return_code)
@@ -50,11 +42,11 @@ def cli(dskm_root, config_file):
     eb.add_km(loader.km)
 
     package = eb.make_package(
-        name=config.get('package', 'name'),
+        name=config.get('package', 'name', fallback=loader.km.name),
         version=config.get('package', 'version', fallback='1.0.0'),
         kmId=config.get('package', 'kmId'),
         organizationId=config.get('package', 'organizationId'),
         parentPackageId=config.get('package', 'parentPackageId', fallback=None),
-        description=config.get('package', 'description', fallback='')
+        description=config.get('package', 'description', fallback=loader.km.description)
     )
     print(json.dumps(package, indent=4))
