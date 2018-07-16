@@ -67,15 +67,19 @@ class EventsBuilder:
 
         xbreadcrumbs = list(breadcrumbs)
         xbreadcrumbs.append(('question', question.uuid))
-        if question.type == 'list':
-            for followup in question.followups:
-                self._add_question(followup, xbreadcrumbs)
         for expert in question.experts:
             self._add_expert(expert, xbreadcrumbs)
         for reference in question.references:
             self._add_reference(reference, xbreadcrumbs)
         for answer in question.answers:
             self._add_answer(answer, xbreadcrumbs)
+        if question.type == 'list':
+            for followup in question.followups:
+                self._add_question(followup, xbreadcrumbs)
+        elif len(question.followups) > 0:  # followups on other types -> after
+            xbreadcrumbs = xbreadcrumbs[:-1]
+            for followup in question.followups:
+                self._add_question(followup, xbreadcrumbs)
 
     def _add_answer(self, answer: Answer, breadcrumbs: list):
         event = {
