@@ -136,6 +136,7 @@ class EventsBuilder:
             event['anchor'] = reference.content['anchor']
         elif reference.type == 'xref':
             event['targetUuid'] = reference.content['target']
+            event['description'] = reference.content['description']
         elif reference.type == 'resourcepage':
             event['shortUuid'] = reference.content['shortuid']
         self.events.append(event)
