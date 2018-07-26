@@ -50,11 +50,18 @@ class EventsBuilder:
         qtype = question.type
         if qtype == 'option':
             qtype = 'options'
+        phases = {
+            1: 'BeforeSubmittingProposal',
+            2: 'BeforeSubmittingDMP',
+            3: 'BeforeFinishingProject',
+            4: 'Anytime'
+        }
         event = {
             'eventType': 'AddQuestionEvent',
             'uuid': self._uuid_generator.generate(),
             'path': self._construct_path(breadcrumbs),
             'questionUuid': question.uuid,
+            'phase': phases[question.phase],
             'type': qtype,
             'title': question.title,
             'text': question.text,

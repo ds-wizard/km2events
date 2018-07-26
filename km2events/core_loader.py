@@ -39,6 +39,8 @@ class CoreLoader:
             followup.precondition = precondition
             precondition.followups.append(followup)
 
+        chapter.complete_phases()
+
         self.km.everything = self.uuid_registry
 
     def _add_question(self, chapter: Chapter, question_data, preconditions):
