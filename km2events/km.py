@@ -41,15 +41,21 @@ class Chapter(KMPart):
         self.questions = []  # type: List[Question]
         self.km = None  # type: KnowledgeModel
 
+    def complete_phases(self):
+        for question in self.questions:
+            if question.is_root:
+                question.propagate_phase()
+
 
 class Question(KMPart):
 
-    def __init__(self, uuid, type, title, text="", **kwargs):
+    def __init__(self, uuid, type, title, text="", phase=None, **kwargs):
         super().__init__(uuid)
 
         self.type = type  # type: str
         self.title = title  # type: str
         self.text = text  # type: str
+        self.phase = phase  # type: int
 
         self.precondition = None  # type: Answer
         self.followups = []  # type: List[Question]
@@ -69,6 +75,15 @@ class Question(KMPart):
     @property
     def km(self):
         return self.chapter.km
+
+    def propagate_phase(self, default=2):
+        if self.phase is None:
+            self.phase = default
+        for followup_question in self.followups:
+            followup_question.propagate_phase(self.phase)
+        for answer in self.answers:
+            for followup_question in answer.followups:
+                followup_question.propagate_phase(self.phase)
 
 
 class Answer(KMPart):
