@@ -50,18 +50,15 @@ class EventsBuilder:
         qtype = question.type
         if qtype == 'option':
             qtype = 'options'
-        phases = {
-            1: 'BeforeSubmittingProposal',
-            2: 'BeforeSubmittingDMP',
-            3: 'BeforeFinishingProject',
-            4: 'Anytime'
-        }
+        requiredLevel = question.phase
+        if requiredLevel == 4:  # i.e. never
+            requiredLevel = None
         event = {
             'eventType': 'AddQuestionEvent',
             'uuid': self._uuid_generator.generate(),
             'path': self._construct_path(breadcrumbs),
             'questionUuid': question.uuid,
-            'phase': phases[question.phase],
+            'requiredLevel': requiredLevel,
             'type': qtype,
             'title': question.title,
             'text': question.text,
@@ -140,7 +137,7 @@ class EventsBuilder:
         }
         if reference.type == 'url':
             event['url'] = reference.content['weblink']
-            event['anchor'] = reference.content['anchor']
+            event['anchor'] = reference.content.get('anchor', event['url'])
         elif reference.type == 'xref':
             event['targetUuid'] = reference.content['target']
             event['description'] = reference.content['description']
