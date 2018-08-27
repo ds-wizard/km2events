@@ -137,7 +137,7 @@ class EventsBuilder:
         }
         if reference.type == 'url':
             event['url'] = reference.content['weblink']
-            event['anchor'] = reference.content.get('anchor', event['url'])
+            event['label'] = reference.content.get('anchor', event['url'])
         elif reference.type == 'xref':
             event['targetUuid'] = reference.content['target']
             event['description'] = reference.content['description']

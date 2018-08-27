@@ -49,7 +49,7 @@ class Chapter(KMPart):
 
 class Question(KMPart):
 
-    def __init__(self, uuid, type, title, text="", phase=None, **kwargs):
+    def __init__(self, uuid, type, title, text=None, phase=None, **kwargs):
         super().__init__(uuid)
 
         self.type = type  # type: str
